@@ -1,55 +1,70 @@
 class Hangman
   def initialize
-    @letter = ('a'..'z').to_a
     @word = words.sample
     @try = 3
     @correct_guess = []
+    @teaser = ''
+    @word.first.size.times do
+      @teaser += '_ '
+    end
   end
 
   def words
     [
       ['Lucky', "It's my Nickname"],
       ['Patra', "It's my Name"],
-      ['Vagyasri', "C'est mon Prenom"],
+      ['Vagyasri', "It's my Prename"],
       ['Coding', "That's what I like to do.."],
       ['Microverse', "It's where from I learn"]
     ]
   end
 
-  def word_teaser
-    teaser = ''
-    @word.first.size.times do
-      teaser += '_ '
+  def word_teaser(last_guess = nil)
+    update_teaser(last_guess) unless last_guess.nil?
+    puts @teaser
+  end
+
+  def update_teaser(last_guess)
+    new_teaser = @teaser.split
+
+    new_teaser.each_with_index do |letter, index|
+      new_teaser[index] = last_guess if letter == '_' && @word.first[index] == last_guess
     end
-    puts teaser
+
+    @teaser = new_teaser.join(' ')
   end
 
   def guess_word
     print "\nEnter a letter:"
     guess = gets.chomp
     good_guess = @word.first.include? guess
-        
-            if good_guess
-                    puts "\nGood guess"
-                    print @correct_guess << guess
-                    @letter.delete guess
-                    word_teaser
-                    guess_word 
+    if guess == 'exit'
+      puts 'Thank you for playing!'
+    elsif guess.length > 1
+      puts 'only guess 1 letter at a time please!'
+      guess_word
+    elsif good_guess
+      puts "\nGood guess"
 
+      word_teaser guess
+      if @word.first == @teaser.split.join
+        puts "\nCongratulations! You won!!"
+      else
+        guess_word
+      end
 
-            else
-                unless @try == 1
-                @try -= 1
-                puts "\nBad Guess!!\n#{@try} tries left..Try again"
-                guess_word
-                else
-                puts "\n Oops!! GAME OVER !!"
-                end
-            end    
+    elsif @try == 1
+      puts "\n Oops!! GAME OVER !! Better luck next time."
+    else
+      @try -= 1
+      puts "\nBad Guess!!\n#{@try} tries left..Try again"
+      guess_word
+    end
   end
 
   def begin
     puts "\nLet's get started.. \n\nYour word is #{@word.first.size} character long (Clue: #{@word.last})"
+    puts "To exit game at any point type 'exit'"
     word_teaser
     puts ''
     guess_word
